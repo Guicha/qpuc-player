@@ -1,0 +1,80 @@
+import controlP5.*;
+import uibooster.*;
+import uibooster.components.*;
+import processing.serial.*;
+
+/* 
+Parsing arguments:
+  ":" => Separateur universel
+  "!" => Entrée Buzzer
+  "?" => Entrée Host
+  
+*/
+
+// Chargement des polices
+PFont myFont;
+
+// Variables de ports COM
+Serial port;
+String selected_port;
+
+// Variables d'alertes et notifications
+UiBooster booster;
+WaitingDialog msg_attente;
+
+
+void setup() {
+
+  // Affichage dans la console des ports COM disponibles
+  printArray(Serial.list());
+
+  // Affichage de l'écran
+  fullScreen();
+
+  // Initialisation de l'UiBooster
+  booster = new UiBooster();
+
+  // Chargement de la police
+  myFont = createFont("kimberley.otf", 32);
+  textFont(myFont);
+
+  // On teste la présence de l'Arduino
+  while (Serial.list().length == 0) {
+
+    booster.showErrorDialog("Veuillez brancher la carte Arduino à l'ordinateur", "ERREUR");
+  }
+
+  // Selection du port
+  selected_port = booster.showSelectionDialog("Selectionner le port COM auquel est branchée la carte Arduino", "Selection du port", Serial.list());
+
+  // Initialisation des variables Serial
+  port = new Serial(this, selected_port, 9600);
+
+  // Confirmation de lancement
+  booster.showInfoDialog("Arduino détectée ! Le programme se lance");
+
+
+
+
+}
+
+
+
+void draw() {
+
+    // Si jamais aucune Arduino n'est branchée
+    if (Serial.list().length == 0) {
+
+        booster.showErrorDialog("La carte Arduino a été débranchée. Le programme doit redémarrer :/", "ERREUR");
+
+        booster.showWarningDialog("N'oubliez pas de maintenir la carte Arduino branchée à l'ordinateur dès le lancement et ce durant toute la durée d'utilisation du logiciel ! ", "INFO");
+
+        exit();
+    }
+
+
+    
+
+
+
+}

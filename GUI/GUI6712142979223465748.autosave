@@ -1,0 +1,550 @@
+import controlP5.*;
+import uibooster.*;
+import uibooster.components.*;
+import uibooster.model.*;
+import processing.serial.*;
+import processing.sound.*;
+
+/* 
+Parsing arguments:
+  ":" => Separateur universel
+  "!" => Entrée Buzzer
+  "?" => Entrée Host
+  
+*/
+
+// Chargement des polices
+PFont myFont;
+
+// Chargement des sons
+SoundFile son_buzzer;
+SoundFile son_bonne_reponse;
+SoundFile son_mauvaise_reponse;
+
+// Variables de ports COM
+Serial port;
+String selected_port;
+
+// Variables d'alertes et notifications
+UiBooster booster;
+ListElement selectedElement;
+
+// Initialisation de la structure des thèmes
+public class Theme {
+
+    String nom;
+    Integer alive;
+
+    public void setName(String name) {
+
+        this.nom = name;
+    }
+
+    public void setAlive(int etat) {
+
+        this.alive = etat;
+    }
+}
+
+
+// Création du tableau de thèmes
+Theme[] tab_themes = new Theme[4];
+
+
+// Initialisation de la structure des joueurs
+public class Joueur {
+
+    String nom;
+    Integer score;
+    Integer enJeu;
+    Integer qualif;
+    Integer alive;
+    Integer buzz;
+    Integer priorite;
+
+    public void setName(String name) {
+
+        this.nom = name;
+    }
+
+    public void setScore(int score) {
+
+        this.score = score;
+    }
+
+    public void setenJeu(int etat) {
+
+        this.enJeu = etat;
+    }
+
+    public void setQualif(int etat) {
+
+        this.qualif = etat;
+    }
+
+    public void setAlive(int etat) {
+
+        this.alive = etat;
+    }
+
+    public void setBuzz(int etat) {
+
+        this.buzz = etat;
+    }
+
+    public void setPriorite(int etat) {
+
+        this.priorite = etat;
+    }
+
+}
+
+    
+// Création du tableau de joueurs
+Joueur[] tab_joueurs = new Joueur[4];
+
+
+// Variables temporaires
+String temp;
+
+
+// Variables du 9 points gagnants
+Integer nbPointsMax;
+Integer aliveEpreuve1 = 1;
+Integer initEpreuve1 = 1;
+Integer pointsQuestion;
+Integer num_joueur;
+
+// Variables du 4 a la suite
+Integer aliveEpreuve2 = 0;
+Integer initEpreuve2 = 1;
+
+// Variables Serial
+String data_recue;
+
+
+
+void setup() {
+
+    // Mise en place du nom de la fenetre
+    surface.setTitle("Questions Pour un Champion - Player by Guicha ;)");
+
+    // Affichage dans la console des ports COM disponibles
+    printArray(Serial.list());
+
+    // Affichage de l'écran
+    fullScreen();
+
+    // Création du tableau de joueurs
+    for (int i=0; i<4; i++) {
+
+        tab_joueurs[i] = new Joueur();
+    }
+
+    // Création du tableau de thèmes
+    for (int i=0; i<4; i++) {
+
+        tab_themes[i] = new Theme();
+    }
+
+
+    // Initialisation de l'UiBooster
+    booster = new UiBooster();
+
+    // Chargement de la police
+    myFont = createFont("kimberley.otf", 32);
+    textFont(myFont);
+
+    // Chargement des sons
+    son_buzzer = new SoundFile(this, "buzzer.wav");
+    son_bonne_reponse = new SoundFile(this, "vrai.wav");
+    son_mauvaise_reponse = new SoundFile(this, "faux.wav");
+    
+
+    // On teste la présence de l'Arduino
+    while (Serial.list().length == 0) {
+
+        booster.showErrorDialog("Veuillez brancher la carte Arduino à l'ordinateur", "ERREUR");
+    }
+
+    // Selection du port
+    selected_port = booster.showSelectionDialog("Selectionner le port COM auquel est branchée la carte Arduino", "Selection du port", Serial.list());
+
+    // Initialisation des variables Serial
+    port = new Serial(this, selected_port, 9600);
+
+    // Confirmation de lancement
+    booster.showInfoDialog("Arduino détectée ! Le programme se lance");
+
+    // Choix et configuration de la partie
+    selectedElement = booster.showList(
+
+        "Sélectionner un mode de jeu",
+
+        "Questions pour un Champion -- Helper v.0",
+
+        new ListElement("Nouvelle partie classique", "Les règles classiques de QPUC: 9 points gagnants, \n 4 à la suite et le face à face !", dataPath("qpuc_logo.jpg"))
+    );
+
+
+    if (selectedElement == null) {
+
+        exit();
+
+    } else {
+
+        // Création d'une nouvelle partie
+        if (selectedElement.getTitle() == "Nouvelle partie classique") {
+
+            booster.showInfoDialog("Partie Classique sélectionnée !");
+
+            for (int i=0; i<4; i++) {
+
+                String affichage = "Saisir le nom du joueur " + (i+1);
+
+                temp = booster.showTextInputDialog(affichage);
+
+                tab_joueurs[i].setName(temp);
+                tab_joueurs[i].setAlive(1);
+        
+            }
+
+
+            nbPointsMax = booster.showSlider(
+
+                "Saisir le nombre de points maximum de l'épreuve \"9 points gagnants\": ",
+
+                "Configuration de la partie",
+
+                1, // Valeur initiale
+                9, // Valeur max
+                9, // Valeur par défaut
+                4, // Milieu
+                1  // Pas du slider
+
+            );
+        }
+    }
+
+
+
+
+    // A CHANGER / ZONE DE TEST
+    aliveEpreuve1 = 0;
+    aliveEpreuve2 = 1;
+
+
+}
+
+
+
+void draw() {
+
+    // Nettoyage du fond a chaque itération
+    background(55, 51, 161);
+
+    // Si jamais aucune Arduino n'est branchée
+    if (Serial.list().length == 0) {
+
+        booster.showErrorDialog("La carte Arduino a été débranchée :/ Veuillez la rebrancher pour continuer à jouer !", "ERREUR");
+    }
+
+
+
+    // 9 points gagnants
+    if (aliveEpreuve1 == 1) {
+
+        // On commence par le 9 points gagnants
+        if (initEpreuve1 == 1) {
+
+            // Initialisation des variables de jeu
+            aliveEpreuve1 = 1;
+            pointsQuestion = 1;
+
+            // On initialise les premières variables de jeu
+            for (int i=0; i<4; i++) {
+
+                tab_joueurs[i].setScore(0);
+                tab_joueurs[i].setQualif(0);
+                tab_joueurs[i].setenJeu(1);
+                tab_joueurs[i].setBuzz(0);
+                
+            }
+
+            initEpreuve1 = 0;
+        }
+
+        // Affichage du titre
+        textSize(70);
+        fill(255, 255, 255);
+        text(nbPointsMax + " points gagnants", 10, 100);
+
+        // Affichage du nombre de points de la question
+        text("Question à " + pointsQuestion + " points", 10, 200);
+
+
+        // Intervention du modérateur (dans le cas d'un joueur qui buzz)
+        if (num_joueur != null) {
+
+            if (tab_joueurs[num_joueur-1].buzz == 1) {
+
+                if (keyPressed) {
+
+                    if (key == 'e') { // Réponse correcte
+
+                        tab_joueurs[num_joueur-1].setBuzz(0);
+
+                        tab_joueurs[num_joueur-1].setScore(tab_joueurs[num_joueur-1].score + pointsQuestion);
+
+                        son_bonne_reponse.play();
+
+                        pointsQuestion = pointsQuestion + 1;
+
+                    
+                    } else if (key == 'z') { // Réponse incorrecte
+
+                        tab_joueurs[num_joueur-1].setBuzz(0);
+
+                        tab_joueurs[num_joueur-1].setenJeu(0);
+
+                        son_mauvaise_reponse.play();
+
+
+                    }   
+                }
+
+            }
+        }
+
+
+
+
+
+
+        // Recupération des buzzers et changement des états
+        if (port.available() > 0) {
+
+            data_recue = port.readStringUntil(':');
+
+            if (data_recue != null) {
+
+                data_recue = data_recue.substring(0, data_recue.length()-1);
+
+            }    
+
+        }
+
+        if (data_recue != null) {
+
+
+            if (data_recue.indexOf('!') != -1) {
+
+                data_recue = data_recue.substring(0, data_recue.length()-1);
+
+                num_joueur = Integer.parseInt(data_recue);
+
+                boolean buzzer_libre = true;
+
+                for (int i=0; i<4; i++) {
+
+                    if (tab_joueurs[i].buzz == 1) {
+
+                        buzzer_libre = false;
+                    }
+                }
+
+                if (num_joueur >= 1 && num_joueur <= 4 && tab_joueurs[num_joueur-1].enJeu == 1 && tab_joueurs[num_joueur-1].qualif == 0 && buzzer_libre == true) {
+
+                    tab_joueurs[num_joueur-1].setBuzz(1);
+
+                    son_buzzer.play(1, 1.0);
+                }
+            }
+        }
+
+        
+
+        // Affichage des joueurs
+        for (int i=0; i<4; i++) {
+
+            if (tab_joueurs[i].enJeu == 1 && tab_joueurs[i].qualif == 0 && tab_joueurs[i].buzz == 1) {
+
+                fill(245, 147, 66); // Orange
+
+            } else if (tab_joueurs[i].qualif == 1) {
+
+                fill(66, 126, 245); // Bleu clair
+
+            } else if (tab_joueurs[i].enJeu == 1 && tab_joueurs[i].qualif == 0 && tab_joueurs[i].buzz == 0) {
+
+                fill(0, 255, 0); // Vert
+
+            } else if (tab_joueurs[i].enJeu == 0) {
+
+                fill(255, 0, 0); // Rouge
+            }
+
+            rect(0+(i*480), 500, 480+(i*480), 1000);
+
+            fill(255, 255, 255);
+
+            text(tab_joueurs[i].nom, ((480 + i*(2*480))/2)-(tab_joueurs[i].nom.length()*2), 750);
+
+            text(tab_joueurs[i].score, ((480 + i*(2*480))/2)-(tab_joueurs[i].nom.length()*2), 850);
+        }
+
+
+
+
+        // Question suivante (si personne n'est correct)
+        if (keyPressed) {
+
+            if (key == 'a') { // Personne n'a trouvé et on passe a la question suivante en resettant certains parametres
+
+                for (int i=0; i<4; i++) {
+
+                    tab_joueurs[i].setenJeu(1);
+                    tab_joueurs[i].setBuzz(0);
+                }
+
+                pointsQuestion = pointsQuestion + 1;
+            }
+        }
+
+
+
+
+        // Mise à jour des points de la question
+        int compteur_qualif = 0;
+
+        for (int i=0; i<4; i++) {
+
+            if (tab_joueurs[i].qualif == 1) {
+
+                compteur_qualif = compteur_qualif + 1;
+            }
+        }
+
+        if (compteur_qualif == 0) {
+
+            if (pointsQuestion == 4) {
+
+                pointsQuestion = 1;
+            }
+
+        } else if (compteur_qualif == 1) {
+
+            pointsQuestion = 2;
+
+        } else if (compteur_qualif == 2) {
+
+            pointsQuestion = 3;
+
+        } else if (compteur_qualif == 3) { // Détection de la fin du jeu s'il y a 3 qualifiés
+
+            for (int i=0; i<4; i++) {
+
+                if (tab_joueurs[i].qualif == 0) {
+
+                    tab_joueurs[i].setAlive(0);
+                    tab_joueurs[i].setPriorite(99);
+                }
+            }
+
+            aliveEpreuve1 = 0;
+            aliveEpreuve2 = 1;
+        }
+
+
+
+
+        // Mise à jour des joueurs
+        compteur_qualif = 0;
+
+        for (int i=0; i<4; i++) {
+
+            if (tab_joueurs[i].qualif == 1) {
+
+                compteur_qualif = compteur_qualif + 1;
+            }
+        }
+
+        for (int i=0; i<4; i++) {
+
+            if (tab_joueurs[i].score >= nbPointsMax && tab_joueurs[i].qualif == 0) {
+
+                tab_joueurs[i].setQualif(1);
+
+                tab_joueurs[i].setPriorite(0 + compteur_qualif);
+            }
+        }
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    // 4 à la suite
+    if (aliveEpreuve2 == 1) {
+
+        if (initEpreuve2 == 1) {
+
+            // Initialisation des variables de jeu
+            aliveEpreuve2 = 1;
+
+            // On initialise les premières variables de jeu
+            for (int i=0; i<4; i++) {
+
+                tab_joueurs[i].setScore(0);
+                tab_joueurs[i].setQualif(0);
+                tab_joueurs[i].setenJeu(0);
+            }
+
+            for (int i=0; i<4; i++) {
+
+                if (tab_joueurs[i].priorite == 0) {
+
+                    tab_joueurs[i].setenJeu(1);
+                }
+            }
+
+            initEpreuve2 = 0;
+
+        }
+
+        // Affichage du titre
+        textSize(70);
+        fill(255, 255, 255);
+        text("4 à la suite", 10, 100);
+
+        // Affichage des joueurs
+        for (int i=0; i<4; i++) {
+
+            if (tab_joueurs[i].enJeu == 1) {
+
+                fill(245, 147, 66); // Orange
+
+            } else if (tab_joueurs[i].enJeu == 0) {
+
+                fill(0, 255, 0); // Vert
+
+            }
+
+            rect(1920-100, 100+(i*100), 1920, 100+(i*100));
+
+            
+        }
+
+    }
+
+   
+
+}
