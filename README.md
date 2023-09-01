@@ -1,7 +1,7 @@
 
-# QPUC Player
+# Questions pour un Champion - Player
 
-Reproduction de l'émission mythique "Questions pour un Champion" jouable grâce à un système de buzzers pris en charge par une carte Arduino Nano et une interface graphique propulsée par Processing Java. \n
+Reproduction de l'émission mythique "Questions pour un Champion" jouable grâce à un système de buzzers pris en charge par une carte Arduino Nano et une interface graphique propulsée par Processing Java. 
 L'idée derrière ce projet a été de pouvoir jouer à QPUC avec un groupe d'amis et ce de manière la plus amusante et réaliste possible. L'objectif était d'abord de s'amuser ; c'est pourquoi le projet contient nombre de bugs, imperfections et une interface graphique très peu travaillée !
 
 ## Fonctionnalités présentes
@@ -39,6 +39,20 @@ Si vous souhaitez vous même jouer à QPUC à l'aide de ce projet, un certain no
 
 ## Installation
 
+### Montage du circuit Arduino
+
+Ci-dessous le montage du circuit électronique de la carte Arduino:
+
+### Téléversement du code sur la carte Arduino
+
+
+### Installation de l'interface graphique
+
+L'interface graphique Processing de la carte Arduino est obtenable via deux méthodes:
+
+- Vous pouvez télécharger le code source et ouvrir le fichier `GUI.pde` dans Processing puis l'executer.
+- L'interface graphique est également disponible en *téléchargement direct* dans la section `Release` du dépôt (à droite de la page) ; téléchargez simplement le fichier et executez le, puis sélectionnez un dossier d'installation. Un raccourci devra apparaître sur le bureau.
+
 
 ## Comment jouer ?
 
@@ -75,6 +89,9 @@ De même, quelques problèmes peuvent survenir du côté du dispositif à buzzer
 
 - Quelques fois les buzzers appuyeront d'eux-même sans intervention humaine. Dans ce cas, vérifiez le branchement des **résistances** des boutons. Redémarrez le player si cela ne règle pas le problème.
 
+## Ressources supplémentaires
+
+Questionnaires de jeu utilisés en club: [Blog de Pierre Tuelcan](https://pierre-tuelcan-questionnaires-36.webself.net/blog)
 
     
 ## Contribution
@@ -87,5 +104,3 @@ Toutes contributions sont les bienvenues ! Le gros du travail réside dans l'opt
 ## Auteurs
 
 - [@Guicha](https://www.github.com/Guicha)
-
-
