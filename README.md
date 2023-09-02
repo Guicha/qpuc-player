@@ -96,6 +96,7 @@ Un certain nombre de problèmes/bugs peuvent survenir durant la partie. Le tout 
 - Quelques fois les noms des joueurs du Face à Face n'apparaissent pas tous. Vous pouvez choisir de poursuivre la partie sans s'en soucier ou en recommencer une nouvelle en brulant les étapes pour revenir à la bonne phase de jeu.
 - Faites attention ! Le chronomètre démarre bel et bien **à l'appui de la barre espace** ; ne vous souciez pas du son qui arrive en retard.
 - La jauge de remplissage des tuiles du Face à Face est **très approximative**. Ne vous y fiez pas.
+- La disposition des buzzers des joueurs est quelques fois modifiées au lancement du Face à Face (*il s'agit d'un problème assez simple à régler dans le code de l'interface processing lors du tri des joueurs*). Vous pouvez surmonter ce problème simplement en retestant les buzzers pour les deux joueurs.
 
 
 De même, quelques problèmes peuvent survenir du côté du dispositif à buzzers:
