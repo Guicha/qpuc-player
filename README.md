@@ -33,18 +33,31 @@ Si vous souhaitez vous même jouer à QPUC à l'aide de ce projet, un certain no
 - Un microcontrôleur Arduino (ici le modèle utilisé est un Nano) et son cable d'alimentation Micro USB vers USB
 - Câblages, boutons, breadboards pour la mise en place du système
 - Un ordinateur 
+- Le logiciel [Arduino IDE](https://www.arduino.cc/en/software) ou autre logiciel permettant de téléverser du code Arduino ([Extension Platformio](https://platformio.org/install/ide?install=vscode) sur VSCode conseillée)
 - Une télévision/grand écran (optionnel)
 - Un clavier externe filaire ou bluetooth (optionnel)
 
 
 ## Installation
 
+Merci de suivre les étapes décrites ci-dessous afin d'installer tous les composants nécessaires au fonctionnement du jeu.
+
 ### Montage du circuit Arduino
 
-Ci-dessous le montage du circuit électronique de la carte Arduino:
+Ci-dessous le montage du circuit électronique de la carte Arduino à reproduire:
+
+![Montage du circuit](Montage QPUC Player.png)
 
 ### Téléversement du code sur la carte Arduino
 
+Le code à téléverser sur la carte Arduino est disponible [ici](ARDUINO/src/main.cpp). A noter que pour cette étape la carte Arduino doit être branchée à l'ordinateur.
+
+- Ouvrir le logiciel Arduino IDE et créer un nouveau sketch.
+- Sélectionner le modèle de la carte Arduino dans le menu "Select Board". Saisir le modèle de la carte que vous possédez. Dans le cas de ce projet, il s'agit d'une "Arduino Nano" (si cela ne fonctionne pas, sélectionner "Arduino Duemilanove"). Si le processeur de la carte est demandé, sélectionner "atmega328p" (dans le cas d'une carte Arduino nano).
+- Coller [le code à téléverser](ARDUINO/src/main.cpp) dans le sketch. Vous pouvez alors modifier à souhait le délai d'appui des buzzers ainsi que les pins de lecture des buzzers. *Noter que modifier les pins de lecture des buzzers implique un différent montage du circuit ; référez vous à la [documentation Arduino](https://docs.arduino.cc/) en cas de doutes/problèmes*.
+- Compiler puis téléverser le code dans la carte.
+
+En cas de soucis lors de ces étapes, de l'aide est disponible [en ligne](https://docs.arduino.cc/) ou sur [Discord](https://discord.com/invite/jQJFwW7).
 
 ### Installation de l'interface graphique
 
