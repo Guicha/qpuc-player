@@ -46,7 +46,7 @@ Merci de suivre les étapes décrites ci-dessous afin d'installer tous les compo
 
 Ci-dessous le montage du circuit électronique de la carte Arduino à reproduire:
 
-![Montage du circuit](Montage QPUC Player.png)
+![Montage du circuit]([Montage QPUC Player.png](https://github.com/Guicha/qpuc-player/blob/main/Montage%20QPUC%20Player.png?raw=true)
 
 ### Téléversement du code sur la carte Arduino
 
